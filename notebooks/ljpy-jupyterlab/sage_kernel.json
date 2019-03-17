@@ -2,6 +2,6 @@
     "display_name": "SageMath 8.1",
     "argv": ["/home/dror/soft/SageMath/local/bin/sage", "--python", "-m", "sage.repl.ipython_kernel", "-f", "{connection_file}"],
     "env": {
-        "SAGE_ROOT": "/home/dror/soft/SageMath/"
+        "SAGE_ROOT": ""
     }
 }

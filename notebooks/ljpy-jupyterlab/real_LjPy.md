@@ -1,4 +1,4 @@
-1. Make sure Jupyter Lab theme is dark, close all open tabs
+1. Hello
 2. Open Jupyter Lab:
     1. Go to `/home/dror/soft/jlpython3`
     2. Run `pipenv shell`
@@ -27,7 +27,9 @@
 5. Starting history before Jupyter Lab:
     1. I'll talk a bit about stuff before and leading to Jupyter Lab
     2. Completion, showed in console tab
-    3. Input history, showed in console tab
+    3. Input history, showed in console tab:
+        1. Open Terminal and run ipython
+        2. Then run `htop` and put tab in bottom right corner
     4. Customizable GUI, showed in themes
     5. Multiple views, for example two views on same markdown file
     6. Inlined plots:
