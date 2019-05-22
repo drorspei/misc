@@ -1,0 +1,49 @@
+@startuml
+title State Chart for Realz
+state "LightAndFanSwitch" as LightAndFanSwitch {
+  [*] --> NoPower
+  state "HasMemory" as HasMemory {
+    [*] --> WithPower
+    state "JustTurnedOff" as JustTurnedOff {
+      JustTurnedOff --> historystate : flick
+      JustTurnedOff --> NoPower : [after(2)]
+    }
+    state "WithPower" as WithPower {
+      [*] --> Components
+      WithPower --> JustTurnedOff : flick
+      state "Components" as Components {
+        state "Fan" as Fan {
+          [*] --> FanOff
+          Fan --> FanOff : remotePressedFanOff
+          Fan --> FanLow : remotePressedLow
+          Fan --> FanMed : remotePressedMed
+          Fan --> FanHi : remotePressedHi
+          state "FanHi" as FanHi {
+          }
+          state "FanMed" as FanMed {
+          }
+          state "FanLow" as FanLow {
+          }
+          state "FanOff" as FanOff {
+          }
+        }
+        --
+        state "Light" as Light {
+          [*] --> LightOn
+          state "LightOff" as LightOff {
+            LightOff --> LightOn : remotePressedLightON
+          }
+          state "LightOn" as LightOn {
+            LightOn --> LightOff : remotePressedLightOff
+          }
+        }
+      }
+      state "H*" as historystate {
+      }
+    }
+  }
+  state "NoPower" as NoPower {
+    NoPower --> HasMemory : flick
+  }
+}
+@enduml

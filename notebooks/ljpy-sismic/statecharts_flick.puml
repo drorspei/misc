@@ -1,0 +1,28 @@
+@startuml
+title State Chart
+state "LightSwitch" as LightSwitch {
+  [*] --> NoPower
+  state "HasMemory" as HasMemory {
+    [*] --> WithPower
+    state "JustTurnedOff" as JustTurnedOff {
+      JustTurnedOff --> historystate : flick
+      JustTurnedOff --> NoPower : [after(2)]
+    }
+    state "WithPower" as WithPower {
+      [*] --> LightOn
+      WithPower --> JustTurnedOff : flick
+      state "LightOff" as LightOff {
+        LightOff --> LightOn : remotePressedON
+      }
+      state "LightOn" as LightOn {
+        LightOn --> LightOff : remotePressedOff
+      }
+      state "H" as historystate {
+      }
+    }
+  }
+  state "NoPower" as NoPower {
+    NoPower --> HasMemory : flick
+  }
+}
+@enduml

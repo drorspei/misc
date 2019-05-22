@@ -1,0 +1,27 @@
+digraph {
+  compound=true;
+  edge [ fontsize=14 ];
+  label = <<b>Light Switch</b>>  
+  subgraph cluster_None {
+    label = "None"
+    color = black
+    style=rounded
+    node [shape=Mrecord width=.4 height=.4];  
+    justTurnedOff [label="justTurnedOff" shape=Mrecord color=black]
+    
+    LightOff [label="LightOff" shape=Mrecord color=black]
+    
+    LightOn [label="LightOn" shape=Mrecord color=black]
+    
+    NoPower [label="NoPower" shape=Mrecord color=black]
+    node [shape=point width=.25 height=.25];
+    initial_None -> NoPower
+  }  
+  LightOff -> LightOn [label="remotePressedOn"]
+  LightOff -> justTurnedOff [label="flick"]
+  LightOn -> NoPower [label="flick"]
+  LightOn -> LightOff [label="remotePressedOff"]
+  NoPower -> LightOn [label="flick"]
+  justTurnedOff -> LightOff [label="flick"]
+  justTurnedOff -> NoPower [label="[after(2)]"]
+}

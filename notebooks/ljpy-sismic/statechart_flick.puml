@@ -1,0 +1,19 @@
+@startuml
+title Light Switch
+state "active" as active {
+  [*] --> OffForRealz
+  state "On" as On {
+    [*] --> Light
+    On --> OffForRealz : flick
+    state "NoLight" as NoLight {
+      NoLight --> Light : remotePressOn
+    }
+    state "Light" as Light {
+      Light --> NoLight : remotePressOff
+    }
+  }
+  state "OffForRealz" as OffForRealz {
+    OffForRealz --> On : flick
+  }
+}
+@enduml

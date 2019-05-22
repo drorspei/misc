@@ -1,0 +1,69 @@
+
+statechart:
+  name: Finite State Machine
+  root state: 
+    name: FanSwitch
+    initial: NoPower
+    states:
+      - name: NoPower
+        transitions:
+          - event: flick
+            target: FanOff
+      - name: FanOff
+        transitions:
+          - event: flick
+            target: NoPower
+          - event: remotePressedLow
+            target: FanLow
+          - event: remotePressedMed
+            target: FanMed
+          - event: remotePressedHi
+            target: FanHi
+      - name: FanLow
+        transitions:
+          - event: flick
+            target: JustTurnedOffFromLow
+          - event: remotePressedOff
+            target: FanOff
+          - event: remotePressedMed
+            target: FanMed
+          - event: remotePressedHi
+            target: FanHi
+      - name: FanMed
+        transitions:
+          - event: flick
+            target: JustTurnedOffFromMed
+          - event: remotePressedOff
+            target: FanOff
+          - event: remotePressedLow
+            target: FanLow
+          - event: remotePressedHi
+            target: FanHi
+      - name: FanHi
+        transitions:
+          - event: flick
+            target: JustTurnedOffFromHi
+          - event: remotePressedOff
+            target: FanOff
+          - event: remotePressedLow
+            target: FanLow
+          - event: remotePressedMed
+            target: FanMed
+      - name: JustTurnedOffFromLow
+        transitions:
+          - event: flick
+            target: FanLow
+          - target: NoPower
+            guard: after(2)
+      - name: JustTurnedOffFromMed
+        transitions:
+          - event: flick
+            target: FanMed
+          - target: NoPower
+            guard: after(2)
+      - name: JustTurnedOffFromHi
+        transitions:
+          - event: flick
+            target: FanHi
+          - target: NoPower
+            guard: after(2)

@@ -1,0 +1,51 @@
+digraph {
+  compound=true;
+  edge [ fontsize=14 ];
+  label = <<b>Finite State Machine</b>>  
+  subgraph cluster_FanSwitch {
+    label = "FanSwitch"
+    color = black
+    style=rounded
+    node [shape=Mrecord width=.4 height=.4];  
+    JustTurnedOffFromHi [label="JustTurnedOffFromHi" shape=Mrecord color=black]
+    
+    JustTurnedOffFromMed [label="JustTurnedOffFromMed" shape=Mrecord color=black]
+    
+    JustTurnedOffFromLow [label="JustTurnedOffFromLow" shape=Mrecord color=black]
+    
+    FanHi [label="FanHi" shape=Mrecord color=black]
+    
+    FanMed [label="FanMed" shape=Mrecord color=black]
+    
+    FanLow [label="FanLow" shape=Mrecord color=black]
+    
+    FanOff [label="FanOff" shape=Mrecord color=black]
+    
+    NoPower [label="NoPower" shape=Mrecord color=black]
+    node [shape=point width=.25 height=.25];
+    initial_FanSwitch -> NoPower
+  }  
+  FanHi -> JustTurnedOffFromHi [label="flick"]
+  FanHi -> FanOff [label="remotePressedOff"]
+  FanHi -> FanLow [label="remotePressedLow"]
+  FanHi -> FanMed [label="remotePressedMed"]
+  FanLow -> JustTurnedOffFromLow [label="flick"]
+  FanLow -> FanOff [label="remotePressedOff"]
+  FanLow -> FanMed [label="remotePressedMed"]
+  FanLow -> FanHi [label="remotePressedHi"]
+  FanMed -> JustTurnedOffFromMed [label="flick"]
+  FanMed -> FanOff [label="remotePressedOff"]
+  FanMed -> FanLow [label="remotePressedLow"]
+  FanMed -> FanHi [label="remotePressedHi"]
+  FanOff -> NoPower [label="flick"]
+  FanOff -> FanLow [label="remotePressedLow"]
+  FanOff -> FanMed [label="remotePressedMed"]
+  FanOff -> FanHi [label="remotePressedHi"]
+  JustTurnedOffFromHi -> FanHi [label="flick"]
+  JustTurnedOffFromHi -> NoPower [label="[after(2)]"]
+  JustTurnedOffFromLow -> FanLow [label="flick"]
+  JustTurnedOffFromLow -> NoPower [label="[after(2)]"]
+  JustTurnedOffFromMed -> FanMed [label="flick"]
+  JustTurnedOffFromMed -> NoPower [label="[after(2)]"]
+  NoPower -> FanOff [label="flick"]
+}

@@ -1,0 +1,34 @@
+@startuml
+title State Chart
+state "FanSwitch" as FanSwitch {
+  [*] --> NoPower
+  state "HasMemory" as HasMemory {
+    [*] --> WithPower
+    state "JustTurnedOff" as JustTurnedOff {
+      JustTurnedOff --> historystate : flick
+      JustTurnedOff --> NoPower : [after(2)]
+    }
+    state "WithPower" as WithPower {
+      [*] --> FanOff
+      WithPower --> FanOff : remotePressedOff
+      WithPower --> FanLow : remotePressedLow
+      WithPower --> FanMed : remotePressedMed
+      WithPower --> FanHi : remotePressedHi
+      WithPower --> JustTurnedOff : flick
+      state "FanHi" as FanHi {
+      }
+      state "FanMed" as FanMed {
+      }
+      state "FanLow" as FanLow {
+      }
+      state "FanOff" as FanOff {
+      }
+      state "H" as historystate {
+      }
+    }
+  }
+  state "NoPower" as NoPower {
+    NoPower --> HasMemory : flick
+  }
+}
+@enduml

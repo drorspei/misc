@@ -1,0 +1,56 @@
+statechart:
+  name: State Chart for Realz
+  root state:
+    name: LightAndFanSwitch
+    initial: NoPower
+    states:
+      - name: NoPower
+        transitions:
+          - event: flick
+            target: HasMemory
+      - name: HasMemory
+        initial: WithPower
+        states:
+          - name: WithPower
+            transitions:
+              - event: flick
+                target: JustTurnedOff
+            initial: Components
+            states:
+              - name: history state
+                type: deep history
+              - name: Components
+                parallel states:
+                  - name: Light
+                    initial: LightOn
+                    states:
+                      - name: LightOn
+                        transitions:
+                          - event: remotePressedLightOff
+                            target: LightOff
+                      - name: LightOff
+                        transitions:
+                          - event: remotePressedLightON
+                            target: LightOn
+                  - name: Fan
+                    initial: FanOff
+                    states:
+                      - name: FanOff
+                      - name: FanLow
+                      - name: FanMed
+                      - name: FanHi
+                    transitions:
+                      - event: remotePressedFanOff
+                        target: FanOff
+                      - event: remotePressedLow
+                        target: FanLow
+                      - event: remotePressedMed
+                        target: FanMed
+                      - event: remotePressedHi
+                        target: FanHi
+          - name: JustTurnedOff
+            transitions:
+              - event: flick
+                target: history state
+              - target: NoPower
+                guard: after(2)

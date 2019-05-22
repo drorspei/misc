@@ -1,0 +1,29 @@
+
+statechart:
+  name: Finite State Machine
+  root state: 
+    name: LightSwitch
+    initial: NoPower
+    states:
+      - name: NoPower
+        transitions:
+          - event: flick
+            target: LightOn
+      - name: LightOn
+        transitions:
+          - event: flick
+            target: NoPower
+          - event: remotePressedOff
+            target: LightOff
+      - name: LightOff
+        transitions:
+          - event: remotePressedOn
+            target: LightOn
+          - event: flick
+            target: justTurnedOff
+      - name: justTurnedOff
+        transitions:
+          - event: flick
+            target: LightOff
+          - target: NoPower
+            guard: after(2)
