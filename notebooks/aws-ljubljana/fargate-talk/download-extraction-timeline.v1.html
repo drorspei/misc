@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download & Extraction Timeline</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .control-group {
+            margin-bottom: 25px;
+        }
+        .control-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .control-row label {
+            width: 180px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .control-row input[type="range"] {
+            flex: 1;
+            margin: 0 15px;
+        }
+        .control-row .value-display {
+            width: 100px;
+            text-align: right;
+            font-size: 14px;
+            color: #333;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            margin-top: 20px;
+            background-color: #fafafa;
+        }
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        .stats {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .legend {
+            margin-top: 15px;
+            display: flex;
+            gap: 30px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-color {
+            width: 30px;
+            height: 15px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Download & Extraction Timeline Visualization</h1>
+
+        <div class="control-group">
+            <div class="section-title">Speeds</div>
+            <div class="control-row">
+                <label>Download speed:</label>
+                <input type="range" id="downloadSpeed" min="100" max="400" value="250" step="10">
+                <span class="value-display"><span id="downloadSpeedValue">250</span> MB/s</span>
+            </div>
+            <div class="control-row">
+                <label>Extraction speed:</label>
+                <input type="range" id="extractionSpeed" min="100" max="400" value="250" step="10">
+                <span class="value-display"><span id="extractionSpeedValue">250</span> MB/s</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="section-title">File Sizes</div>
+            <div class="control-row">
+                <label>File 1 size:</label>
+                <input type="range" id="file1Size" min="0" max="2700" value="900" step="50">
+                <span class="value-display"><span id="file1SizeValue">900</span> MB</span>
+            </div>
+            <div class="control-row">
+                <label>File 2 size:</label>
+                <input type="range" id="file2Size" min="0" max="2700" value="900" step="50">
+                <span class="value-display"><span id="file2SizeValue">900</span> MB</span>
+            </div>
+            <div class="control-row">
+                <label>File 3 size:</label>
+                <span class="value-display" style="margin-left: 15px;"><span id="file3SizeValue">900</span> MB (auto-calculated)</span>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #4A90E2;"></div>
+                <span>Download</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #F5A623;"></div>
+                <span>Extraction</span>
+            </div>
+        </div>
+
+        <canvas id="timeline" width="1140" height="300"></canvas>
+
+        <div class="stats">
+            <strong>Total Time: <span id="totalTime">0.00</span> seconds</strong>
+        </div>
+    </div>
+
+    <script>
+        // Get all controls
+        const downloadSpeedSlider = document.getElementById('downloadSpeed');
+        const extractionSpeedSlider = document.getElementById('extractionSpeed');
+        const file1SizeSlider = document.getElementById('file1Size');
+        const file2SizeSlider = document.getElementById('file2Size');
+
+        const downloadSpeedValue = document.getElementById('downloadSpeedValue');
+        const extractionSpeedValue = document.getElementById('extractionSpeedValue');
+        const file1SizeValue = document.getElementById('file1SizeValue');
+        const file2SizeValue = document.getElementById('file2SizeValue');
+        const file3SizeValue = document.getElementById('file3SizeValue');
+        const totalTimeValue = document.getElementById('totalTime');
+
+        const canvas = document.getElementById('timeline');
+        const ctx = canvas.getContext('2d');
+
+        // Colors
+        const DOWNLOAD_COLOR = '#4A90E2';
+        const EXTRACTION_COLOR = '#F5A623';
+
+        // Update display values and redraw
+        function updateValues() {
+            downloadSpeedValue.textContent = downloadSpeedSlider.value;
+            extractionSpeedValue.textContent = extractionSpeedSlider.value;
+            file1SizeValue.textContent = file1SizeSlider.value;
+            file2SizeValue.textContent = file2SizeSlider.value;
+
+            // Calculate file 3 size
+            const file1 = parseInt(file1SizeSlider.value);
+            const file2 = parseInt(file2SizeSlider.value);
+            const file3 = Math.max(0, 2700 - file1 - file2);
+            file3SizeValue.textContent = file3;
+
+            drawTimeline();
+        }
+
+        function drawTimeline() {
+            // Get current values
+            const downloadSpeed = parseInt(downloadSpeedSlider.value); // MB/s
+            const extractionSpeed = parseInt(extractionSpeedSlider.value); // MB/s
+            const file1Size = parseInt(file1SizeSlider.value); // MB
+            const file2Size = parseInt(file2SizeSlider.value); // MB
+            const file3Size = Math.max(0, 2700 - file1Size - file2Size); // MB
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Calculate times for each file
+            const files = [
+                { size: file1Size, name: 'File 1' },
+                { size: file2Size, name: 'File 2' },
+                { size: file3Size, name: 'File 3' }
+            ];
+
+            // Calculate download and extraction times (in seconds)
+            files.forEach(file => {
+                file.downloadTime = file.size / downloadSpeed;
+                file.extractionTime = file.size / extractionSpeed;
+            });
+
+            // Calculate timeline positions
+            const timeline = [];
+
+            // File 1: download starts at 0, extraction starts right after download
+            timeline.push({
+                file: files[0],
+                downloadStart: 0,
+                downloadEnd: files[0].downloadTime,
+                extractionStart: files[0].downloadTime,
+                extractionEnd: files[0].downloadTime + files[0].extractionTime
+            });
+
+            // File 2: download starts at 0 (parallel), extraction starts after both:
+            // 1. File 2 download completes
+            // 2. File 1 extraction completes
+            const file2DownloadEnd = files[1].downloadTime;
+            const file2ExtractionStart = Math.max(file2DownloadEnd, timeline[0].extractionEnd);
+            timeline.push({
+                file: files[1],
+                downloadStart: 0,
+                downloadEnd: file2DownloadEnd,
+                extractionStart: file2ExtractionStart,
+                extractionEnd: file2ExtractionStart + files[1].extractionTime
+            });
+
+            // File 3: download starts at 0 (parallel), extraction starts after both:
+            // 1. File 3 download completes
+            // 2. File 2 extraction completes
+            const file3DownloadEnd = files[2].downloadTime;
+            const file3ExtractionStart = Math.max(file3DownloadEnd, timeline[1].extractionEnd);
+            timeline.push({
+                file: files[2],
+                downloadStart: 0,
+                downloadEnd: file3DownloadEnd,
+                extractionStart: file3ExtractionStart,
+                extractionEnd: file3ExtractionStart + files[2].extractionTime
+            });
+
+            // Find total time
+            const totalTime = Math.max(...timeline.map(t => t.extractionEnd));
+            totalTimeValue.textContent = totalTime.toFixed(2);
+
+            // Draw timeline
+            const padding = 40;
+            const rowHeight = 60;
+            const rowSpacing = 20;
+            const maxWidth = canvas.width - 2 * padding;
+            const pixelsPerSecond = totalTime > 0 ? maxWidth / totalTime : 0;
+
+            timeline.forEach((item, index) => {
+                const y = padding + index * (rowHeight + rowSpacing);
+
+                // Draw file label
+                ctx.fillStyle = '#333';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText(item.file.name, padding - 10, y + rowHeight / 2 + 5);
+
+                // Draw download bar
+                const downloadX = padding + item.downloadStart * pixelsPerSecond;
+                const downloadWidth = (item.downloadEnd - item.downloadStart) * pixelsPerSecond;
+
+                ctx.fillStyle = DOWNLOAD_COLOR;
+                ctx.fillRect(downloadX, y + 10, downloadWidth, 40);
+
+                // Draw download time text
+                if (downloadWidth > 30) {
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(
+                        item.downloadEnd.toFixed(2) + 's',
+                        downloadX + downloadWidth / 2,
+                        y + rowHeight / 2 + 5
+                    );
+                }
+
+                // Draw extraction bar
+                const extractionX = padding + item.extractionStart * pixelsPerSecond;
+                const extractionWidth = (item.extractionEnd - item.extractionStart) * pixelsPerSecond;
+
+                ctx.fillStyle = EXTRACTION_COLOR;
+                ctx.fillRect(extractionX, y + 10, extractionWidth, 40);
+
+                // Draw extraction time text
+                if (extractionWidth > 30) {
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(
+                        item.file.extractionTime.toFixed(2) + 's',
+                        extractionX + extractionWidth / 2,
+                        y + rowHeight / 2 + 5
+                    );
+                }
+
+                // Draw outline
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(downloadX, y + 10, downloadWidth, 40);
+                ctx.strokeRect(extractionX, y + 10, extractionWidth, 40);
+            });
+
+            // Draw time axis
+            const axisY = canvas.height - 30;
+            ctx.strokeStyle = '#999';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, axisY);
+            ctx.lineTo(padding + maxWidth, axisY);
+            ctx.stroke();
+
+            // Draw time markers
+            const numMarkers = 10;
+            ctx.fillStyle = '#666';
+            ctx.font = '11px Arial';
+            ctx.textAlign = 'center';
+
+            for (let i = 0; i <= numMarkers; i++) {
+                const time = (totalTime / numMarkers) * i;
+                const x = padding + (maxWidth / numMarkers) * i;
+
+                // Draw tick
+                ctx.beginPath();
+                ctx.moveTo(x, axisY);
+                ctx.lineTo(x, axisY + 5);
+                ctx.stroke();
+
+                // Draw time label
+                ctx.fillText(time.toFixed(1) + 's', x, axisY + 20);
+            }
+        }
+
+        // Add event listeners
+        downloadSpeedSlider.addEventListener('input', updateValues);
+        extractionSpeedSlider.addEventListener('input', updateValues);
+        file1SizeSlider.addEventListener('input', updateValues);
+        file2SizeSlider.addEventListener('input', updateValues);
+
+        // Initial draw
+        updateValues();
+    </script>
+</body>
+</html>
